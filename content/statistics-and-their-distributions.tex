@@ -104,6 +104,7 @@
 % \Gamma(n-\frac{1}{2})=\frac{(2n)!}{4^{n}n!}\sqrt{\pi}
 
 \newcommand{\gammaFunc}[1]{%
+	\pgfkeys{/pgf/fpu,/pgf/fpu/output format=fixed}% 使用 fpu 计算
   \pgfmathifisint{#1}{% 检查是否为整数
     % 如果是整数，使用内建的阶乘函数
     \pgfmathparse{factorial(#1-1)}%
@@ -177,11 +178,11 @@
 					$4$,
 					$6$,
 					$8$,
-					% $10$,
+					$10$,
 				},
 			},
 		]
-			\foreach \n [evaluate=\n as \half using \n/2] in {2,3,...,8}{
+			\foreach \n [evaluate=\n as \half using \n/2] in {2,3,...,10}{
 				\gammaFunc{\half}
 				\edef\gammaValue{\pgfmathresult}
 				\addplot {x^(\half-1)*e^(-x/2)/(2^(\half)*\gammaValue)};
