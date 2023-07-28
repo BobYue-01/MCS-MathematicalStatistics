@@ -136,13 +136,19 @@
 			y tick label style={
 				/pgf/number format/fixed,
 				/pgf/number format/fixed zerofill,
-				/pgf/number format/precision=2,
+				/pgf/number format/precision=1,
 			},
 			axis lines=middle,
 			x=0.2cm,
 			y=4cm,
 			xtick distance=2,
 			ytick distance=0.1,
+			xlabel=$x$,
+			ylabel=$f(x)$,
+			xlabel style={
+        at={(ticklabel* cs:1)},
+        anchor=west,
+			},
 			% grid=major,
 			domain=0:10,
 			enlarge x limits={abs=1},
@@ -150,27 +156,32 @@
 			legend style={draw=none},
 			legend pos=north east,
 			axis line style={->},
-			cycle list={[indices of colormap={0,4,...,16} of viridis]},
+			cycle list={[colors of colormap={0,125,...,1000} of viridis]},
 			thick,
 			samples=65,
 			colorbar sampled line,
+			colorbar horizontal,
 			colormap={legend}{
 				of colormap={viridis},
 			},
 			colorbar style={
-				y dir=reverse,
-				samples=5,
-				ytick={0,0.25,0.5,0.75,1},
-				yticklabels={%
-					$\chi^2(2)$,
-					$\chi^2(3)$,
-					$\chi^2(4)$,
-					$\chi^2(5)$,
-					$\chi^2(6)$,
+				samples=9,
+				xlabel=\tiny$\chi^2(\cdot)$,
+				xlabel style={
+					at={(ticklabel* cs:0)},
+					anchor=east,
+				},
+				xtick={0,0.25,...,1},
+				xticklabels={%
+					$2$,
+					$4$,
+					$6$,
+					$8$,
+					% $10$,
 				},
 			},
 		]
-			\foreach \n [evaluate=\n as \half using \n/2] in {2,3,...,6}{
+			\foreach \n [evaluate=\n as \half using \n/2] in {2,3,...,8}{
 				\gammaFunc{\half}
 				\edef\gammaValue{\pgfmathresult}
 				\addplot {x^(\half-1)*e^(-x/2)/(2^(\half)*\gammaValue)};
