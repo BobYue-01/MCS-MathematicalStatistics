@@ -65,11 +65,13 @@
 	\begin{enumerate}
 		\item $x_{(k)}$ 的概率密度函数为
 			\[
-				f_{x_{(k)}}(x)=\frac{n!}{(k-1)!(n-k)!}F^{k-1}(x)[1-F(x)]^{n-k}f(x),\quad k=1,\,2,\,\dots,\,n.
+				f_{x_{(k)}}(x)=\frac{n!}{(k-1)!\cdot(n-k)!}\cdot F^{k-1}(x)\cdot[1-F(x)]^{n-k}\cdot f(x),\quad k=1,\,2,\,\dots,\,n.
 			\]
 		\item $(x_{(i)},x_{(j)})$ 的概率密度函数为
 			\[
-				f_{x_{(i)},x_{(j)}}(x,y)=\frac{n!}{(i-1)!(j-i-1)!(n-j)!}F^{i-1}(x)[F(y)-F(x)]^{j-i-1}[1-F(y)]^{n-j}f(x)f(y),\quad i<j.
+				\begin{split}
+					f_{x_{(i)},x_{(j)}}(x,y)={}&\frac{n!}{(i-1)!\cdot(j-i-1)!\cdot(n-j)!}\\&\cdot F^{i-1}(x)\cdot[F(y)-F(x)]^{j-i-1}\cdot[1-F(y)]^{n-j}\\&\cdot f(x)\cdot f(y),\quad i<j.
+				\end{split}
 			\]
 	\end{enumerate}
 \end{newtheorembox}
@@ -98,7 +100,21 @@
 
 \newcommand{\GaDistri}[2]{\mathop{\mathrm{Ga}}\nolimits\left(#1,\,#2\right)}
 
-\begin{newdefbox}{卡方分布\seclan{chi-square distribution}}{chi-square-distribution}
+% 注意，由于 pgfplots 内部不支持 Gamma 函数，我们需使用 Gamma 函数在特值 n/2 处的性质，即
+% \Gamma(n-\frac{1}{2})=\frac{(2n)!}{4^{n}n!}\sqrt{\pi}
+
+\newcommand{\gammaFunc}[1]{%
+  \pgfmathifisint{#1}{% 检查是否为整数
+    % 如果是整数，使用内建的阶乘函数
+    \pgfmathparse{factorial(#1-1)}%
+  }{%
+    % 如果是非整数，使用伽马函数的公式
+		\pgfmathparse{#1-0.5}%
+    \pgfmathparse{((2*\pgfmathresult)!)/(4^(\pgfmathresult)*factorial(\pgfmathresult))*sqrt(pi)}%
+  }
+}
+
+\begin{newdefboxtwoside}{卡方分布\seclan{chi-square distribution}}{chi-square-distribution}
 	设 $x_1,\,x_2,\,\dots,\,x_n$ 是来自 $N(0,\,1)$ 的样本, 则称
 	\[
 		\chi^2=x_1^2+x_2^2+\dots+x_n^2
@@ -108,11 +124,61 @@
 	实际上, 由概率论的知识可知, $\chi^2\sim\GaDistri{n/2}{1/2}$.  即 $\chi^2$ 的概率密度函数为
 	\[
 		f(x)=\begin{cases}
-			\frac{1}{2^{n/2}\Gamma(n/2)}x^{n/2-1}e^{-x/2}, & x>0,\\
+			\frac{1}{2^{n/2}\Gamma(n/2)}x^{n/2-1}e^{-x/2}, & x>0;\\
 			0, & x\leqslant 0.
 		\end{cases}
 	\]
-\end{newdefbox}
+	\tcblower
+	\begin{tikzpicture}
+		\begin{axis}[
+			baseline,
+			title=卡方分布示意图,
+			y tick label style={
+				/pgf/number format/fixed,
+				/pgf/number format/fixed zerofill,
+				/pgf/number format/precision=2,
+			},
+			axis lines=middle,
+			x=0.2cm,
+			y=4cm,
+			xtick distance=2,
+			ytick distance=0.1,
+			% grid=major,
+			domain=0:10,
+			enlarge x limits={abs=1},
+			enlarge y limits={abs=0.05},
+			legend style={draw=none},
+			legend pos=north east,
+			axis line style={->},
+			cycle list={[indices of colormap={0,4,...,16} of viridis]},
+			thick,
+			samples=65,
+			colorbar sampled line,
+			colormap={legend}{
+				of colormap={viridis},
+			},
+			colorbar style={
+				y dir=reverse,
+				samples=5,
+				ytick={0,0.25,0.5,0.75,1},
+				yticklabels={%
+					$\chi^2(2)$,
+					$\chi^2(3)$,
+					$\chi^2(4)$,
+					$\chi^2(5)$,
+					$\chi^2(6)$,
+				},
+			},
+		]
+			\foreach \n [evaluate=\n as \half using \n/2] in {2,3,...,6}{
+				\gammaFunc{\half}
+				\edef\gammaValue{\pgfmathresult}
+				\addplot {x^(\half-1)*e^(-x/2)/(2^(\half)*\gammaValue)};
+				% \addlegendentryexpanded{$\chi^2(\n)$};
+			}
+		\end{axis}
+	\end{tikzpicture}
+\end{newdefboxtwoside}
 
 \begin{newtheorembox}{卡方分布的性质\seclan{properties of chi-square distribution}}{properties-of-chi-square-distribution}
 	设 $\chi^2\sim\chi^2(n)$, 则
@@ -135,9 +201,4 @@
 		t=\frac{x}{\sqrt{y/n}}
 	\]
 	服从自由度为 $n$ 的\textbf{$t$ 分布}, 记为 $t\sim t(n)$.
-	\par
-	实际上, 由概率论的知识可知, $t\sim t(n)$.  即 $t$ 的概率密度函数为
-	\[
-		f(x)=\frac{\Gamma\left(\frac{n+1}{2}\right)}{\sqrt{n\pi}\Gamma\left(\frac{n}{2}\right)}\left(1+\frac{x^2}{n}\right)^{-\frac{n+1}{2}},\quad -\infty<x<+\infty.
-	\]
 \end{newdefbox}
